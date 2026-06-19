@@ -1,0 +1,24 @@
+<div id="feed-list" class="feed-list">
+{{if .Feeds}}
+<div class="feed-item feed-all" data-class:active="$feedFilter == ''">
+  <a href="#" data-on:click="$feedFilter = ''; @get('/entries?v={{version}}')" class="feed-link">
+    <span class="feed-name">{{T .Locale "all_feeds"}}</span>
+    <span class="feed-count">{{.TotalEntries}}</span>
+  </a>
+</div>
+{{range .Feeds}}
+<div class="feed-item" data-class:active="$feedFilter == '{{.ID}}'">
+  <a href="#" data-on:click="$feedFilter = '{{.ID}}'; @get('/entries?v={{version}}')" class="feed-link">
+    <span class="feed-name">{{.Title}}</span>
+    <span class="feed-count" id="unread-{{.ID}}">{{.EntryCount}}</span>
+  </a>
+  <div class="feed-actions">
+    <button data-on:click="@post('/feeds/{{.ID}}/refresh')" class="btn-icon" title="{{T $.Locale "refresh"}}">↻</button>
+    <button data-on:click="@delete('/feeds/{{.ID}}')" class="btn-icon btn-icon-danger" title="{{T $.Locale "remove"}}">✕</button>
+  </div>
+</div>
+{{end}}
+{{else}}
+<p class="empty-state">{{T .Locale "no_feeds_yet"}}</p>
+{{end}}
+</div>

@@ -1,0 +1,40 @@
+version: 2
+
+project_name: piponews
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - ldflags:
+      - -X piponews/internal/handlers.BuildVersion={{.Date}}
+      - -X main.Version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - formats: tar.gz
+    format_overrides:
+      - goos: windows
+        formats: zip
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - Merge pull request
+      - Merge branch

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{T .Locale "app_name"}}</title>
+  <script src="/static/datastar.js?v={{version}}" type="module"></script>
+  <link rel="stylesheet" href="/static/style.css?v={{version}}">
+</head>
+<body data-signals="{showUserMenu: false, showProfile: false}">
+  <nav>
+    <div class="nav-inner">
+      <a href="/feeds" class="logo">{{T .Locale "app_name"}}</a>
+      {{if .Username}}
+      <div class="nav-right">
+        <div class="user-avatar-wrap">
+          <button data-on:click="$showUserMenu = !$showUserMenu" class="avatar-circle">{{initial .Username}}</button>
+          <div data-show="$showUserMenu" class="user-menu-backdrop" data-on:click="$showUserMenu = false"></div>
+          <div data-show="$showUserMenu" class="user-menu">
+            <div class="user-menu-header">{{.Username}}</div>
+            <div class="user-menu-lang">
+              <label class="user-menu-label">{{T .Locale "language"}}</label>
+              <select onchange="window.location.href = '/lang?locale=' + this.value" class="user-menu-select">
+                <option value="en">🇬🇧 English</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="it">🇮🇹 Italiano</option>
+              </select>
+            </div>
+            <button data-on:click="$showUserMenu = false; $showProfile = true; @get('/profile?v={{version}}')" class="user-menu-item">{{T .Locale "edit_profile"}}</button>
+            <form data-on:submit="@post('/logout')" class="user-menu-item-form">
+              <button type="submit" class="user-menu-item">{{T .Locale "logout"}}</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {{end}}
+    </div>
+  </nav>
+  <main id="main-content">
+    {{template "content" .}}
+  </main>
+  {{if .Username}}
+  <div id="profile-dialog" data-show="$showProfile"></div>
+  {{end}}
+</body>
+</html>

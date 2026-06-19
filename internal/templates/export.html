@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{T .Locale "sel_entries_title" (T .Locale "app_name")}}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 24px; line-height: 1.6; color: #333; }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .meta { color: #666; font-size: 0.875rem; margin-bottom: 24px; }
+  article { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #eee; }
+  article:last-child { border-bottom: none; }
+  .entry-title { font-size: 1.25rem; }
+  .entry-title a { color: #2563eb; text-decoration: none; }
+  .entry-title a:hover { text-decoration: underline; }
+  .content { margin-top: 4px; font-size: 0.9375rem; line-height: 1.6; }
+</style>
+</head>
+<body>
+<h1>{{T .Locale "sel_entries_title" (T .Locale "app_name")}}</h1>
+<p class="meta">{{T .Locale "exported_on" .Date}}</p>
+{{range .Entries}}
+<article>
+  <div class="entry-title">{{if .PublishedAt}}{{formatTime .PublishedAt $.Locale}} — {{end}}{{if .URL}}<a href="{{.URL}}" target="_blank" rel="noopener">{{.Title}}</a>{{else}}{{.Title}}{{end}}</div>
+  {{if .Summary}}<div class="content">{{safeHTML .Summary}}</div>{{end}}
+</article>
+{{else}}
+<p>{{T .Locale "no_entries_sel"}}</p>
+{{end}}
+</body>
+</html>

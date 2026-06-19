@@ -1,0 +1,96 @@
+{{define "content"}}
+<div class="app-layout" data-signals="{feedFilter: '', dateFrom: '', dateTo: '', showExport: false}">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>{{T .Locale "feeds"}}</h2>
+      <form data-on:submit="@post('/feeds')" class="add-feed-form" data-indicator:saving>
+        <input type="url" data-bind:url placeholder="{{T .Locale "feed_url_placeholder"}}" required class="input-feed-url">
+        <button type="submit" class="btn-add" data-attr:disabled="$saving">+</button>
+      </form>
+    </div>
+    <div id="feed-list" class="feed-list">
+      {{if .Feeds}}
+      <div class="feed-item feed-all" data-class:active="$feedFilter == ''">
+        <a href="#" data-on:click="$feedFilter = ''; @get('/entries?v={{version}}')" class="feed-link">
+          <span class="feed-name">{{T .Locale "all_feeds"}}</span>
+          <span class="feed-count">{{.TotalEntries}}</span>
+        </a>
+      </div>
+      {{range .Feeds}}
+      <div class="feed-item" data-class:active="$feedFilter == '{{.ID}}'">
+        <a href="#" data-on:click="$feedFilter = '{{.ID}}'; @get('/entries?v={{version}}')" class="feed-link">
+          <span class="feed-name">{{.Title}}</span>
+          <span class="feed-count" id="unread-{{.ID}}">{{.EntryCount}}</span>
+        </a>
+        <div class="feed-actions">
+          <button data-on:click="@post('/feeds/{{.ID}}/refresh')" class="btn-icon" title="{{T $.Locale "refresh"}}">↻</button>
+          <button data-on:click="@delete('/feeds/{{.ID}}')" class="btn-icon btn-icon-danger" title="{{T $.Locale "remove"}}">✕</button>
+        </div>
+      </div>
+      {{end}}
+      {{else}}
+      <p class="empty-state">{{T .Locale "no_feeds_yet"}}</p>
+      {{end}}
+    </div>
+  </aside>
+
+  <section class="main-panel">
+    <div id="entries-panel">
+      <div id="filter-bar" class="filter-bar">
+        <div class="filter-row">
+          <select data-bind:feedFilter data-on:change="@get('/entries?v={{version}}')" class="filter-select">
+            <option value="">{{T .Locale "all_feeds"}}</option>
+            {{range .Feeds}}
+            <option value="{{.ID}}">{{.Title}}</option>
+            {{end}}
+          </select>
+          <input type="date" data-bind:dateFrom data-on:change="@get('/entries?v={{version}}')" class="filter-date" placeholder="{{T .Locale "from"}}">
+          <input type="date" data-bind:dateTo data-on:change="@get('/entries?v={{version}}')" class="filter-date" placeholder="{{T .Locale "to"}}">
+        </div>
+        <div class="filter-row filter-actions">
+          <button data-on:click="@post('/entries/refresh-all')" class="btn-outline btn-sm">{{T .Locale "refresh_all"}}</button>
+          <button data-on:click="@post('/entries/clear-selection')" class="btn-outline btn-sm">{{T .Locale "clear_selection"}}</button>
+          <button data-on:click="$showExport = true" class="btn-primary btn-sm">{{T .Locale "export_selected"}}</button>
+          {{if .SelectedCount}}<span class="selected-count">{{T .Locale "selected_count" .SelectedCount}}</span>{{end}}
+        </div>
+      </div>
+
+      <div id="entries-list" class="entries-list" data-signals:offset="0">
+        {{range .Entries}}
+        {{template "entry_card" (dict "Entry" . "Locale" $.Locale)}}
+        {{else}}
+        <div class="empty-state">
+          {{if .Feeds}}<p>{{T .Locale "no_entries_match"}}</p>{{else}}<p>{{T .Locale "no_entries_yet"}}</p>{{end}}
+        </div>
+        {{end}}
+        {{if .HasMore}}
+        <div id="entries-sentinel" data-on-intersect="@get('/entries/more?v={{version}}')" class="entries-sentinel">
+          <span>{{T .Locale "loading"}}</span>
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="export-dialog" data-show="$showExport">
+  <div class="dialog-overlay" data-on:click="$showExport = false"></div>
+  <div class="dialog" data-signals:exportFormat="'html'">
+    <h3>{{T .Locale "export_sel_entries"}}</h3>
+    <form action="/entries/export?v={{version}}" method="POST" target="_blank">
+      <div class="form-group">
+        <label>{{T .Locale "format"}}</label>
+        <select data-bind:exportFormat name="exportFormat">
+          <option value="html">{{T .Locale "html"}}</option>
+          <option value="txt">{{T .Locale "plain_text"}}</option>
+          <option value="csv">{{T .Locale "csv"}}</option>
+        </select>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" data-on:click="$showExport = false" class="btn-outline">{{T .Locale "cancel"}}</button>
+        <button type="submit" class="btn-primary">{{T .Locale "export"}}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}

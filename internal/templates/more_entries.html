@@ -1,0 +1,3 @@
+{{range .Entries}}
+{{template "entry_card" (dict "Entry" . "Locale" $.Locale)}}
+{{end}}

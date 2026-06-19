@@ -1,0 +1,13 @@
+========================================
+{{T .Locale "txt_header" (T .Locale "app_name")}}
+{{T .Locale "exported_on" .Date}}
+========================================
+{{range .Entries}}
+
+---
+{{.Title}}
+{{if .PublishedAt}}{{formatTime .PublishedAt $.Locale}}{{end}}
+
+{{stripTags .Summary}}
+
+{{end}}

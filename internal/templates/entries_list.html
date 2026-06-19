@@ -1,0 +1,14 @@
+<div id="entries-list" class="entries-list" data-signals:offset="0">
+{{range .Entries}}
+{{template "entry_card" (dict "Entry" . "Locale" $.Locale)}}
+{{else}}
+<div class="empty-state">
+  <p>{{.EmptyMessage}}</p>
+</div>
+{{end}}
+{{if .HasMore}}
+<div id="entries-sentinel" data-on-intersect="@get('/entries/more?v={{version}}')" class="entries-sentinel">
+  <span>{{T .Locale "loading"}}</span>
+</div>
+{{end}}
+</div>
