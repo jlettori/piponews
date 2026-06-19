@@ -1,5 +1,5 @@
 {{define "content"}}
-<div class="app-layout" data-signals="{feedFilter: '', dateFrom: '', dateTo: '', showExport: false}">
+<div class="app-layout" data-signals="{feedFilter: '', dateFrom: '', dateTo: '', searchQuery: '', showExport: false}">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <h2>{{T .Locale "feeds"}}</h2>
@@ -46,6 +46,7 @@
           </select>
           <input type="date" data-bind:dateFrom data-on:change="@get('/entries?v={{version}}')" class="filter-date" placeholder="{{T .Locale "from"}}">
           <input type="date" data-bind:dateTo data-on:change="@get('/entries?v={{version}}')" class="filter-date" placeholder="{{T .Locale "to"}}">
+          <input type="text" data-bind:searchQuery data-on:change="@get('/entries?v={{version}}')" class="filter-search" placeholder="{{T .Locale "search"}}">
         </div>
         <div class="filter-row filter-actions">
           <button data-on:click="@post('/entries/refresh-all')" class="btn-outline btn-sm">{{T .Locale "refresh_all"}}</button>

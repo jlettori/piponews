@@ -63,24 +63,26 @@ func (h *EntriesHandler) List(w http.ResponseWriter, r *http.Request) {
 	locale := detectLocale(r)
 	userID := auth.GetUserID(r)
 
-	var feedFilter, dateFrom, dateTo string
+	var feedFilter, dateFrom, dateTo, searchQuery string
 	ds := r.URL.Query().Get("datastar")
 	if ds != "" {
 		var signals struct {
-			FeedFilter string `json:"feedFilter"`
-			DateFrom   string `json:"dateFrom"`
-			DateTo     string `json:"dateTo"`
+			FeedFilter  string `json:"feedFilter"`
+			DateFrom    string `json:"dateFrom"`
+			DateTo      string `json:"dateTo"`
+			SearchQuery string `json:"searchQuery"`
 		}
 		if err := json.Unmarshal([]byte(ds), &signals); err == nil {
-			feedFilter, dateFrom, dateTo = signals.FeedFilter, signals.DateFrom, signals.DateTo
+			feedFilter, dateFrom, dateTo, searchQuery = signals.FeedFilter, signals.DateFrom, signals.DateTo, signals.SearchQuery
 		}
 	} else {
 		feedFilter = r.URL.Query().Get("feedFilter")
 		dateFrom = r.URL.Query().Get("dateFrom")
 		dateTo = r.URL.Query().Get("dateTo")
+		searchQuery = r.URL.Query().Get("searchQuery")
 	}
 
-	entries := FetchEntries(h.DB, userID, feedFilter, dateFrom, dateTo, entryPageSize, 0)
+	entries := FetchEntries(h.DB, userID, feedFilter, dateFrom, dateTo, searchQuery, entryPageSize, 0)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	RenderEntriesHTML(w, entries, locale)
@@ -91,22 +93,23 @@ func (h *EntriesHandler) More(w http.ResponseWriter, r *http.Request) {
 	userID := auth.GetUserID(r)
 
 	offset := 0
-	var feedFilter, dateFrom, dateTo string
+	var feedFilter, dateFrom, dateTo, searchQuery string
 	ds := r.URL.Query().Get("datastar")
 	if ds != "" {
 		var signals struct {
-			Offset     int    `json:"offset"`
-			FeedFilter string `json:"feedFilter"`
-			DateFrom   string `json:"dateFrom"`
-			DateTo     string `json:"dateTo"`
+			Offset      int    `json:"offset"`
+			FeedFilter  string `json:"feedFilter"`
+			DateFrom    string `json:"dateFrom"`
+			DateTo      string `json:"dateTo"`
+			SearchQuery string `json:"searchQuery"`
 		}
 		if err := json.Unmarshal([]byte(ds), &signals); err == nil {
 			offset = signals.Offset
-			feedFilter, dateFrom, dateTo = signals.FeedFilter, signals.DateFrom, signals.DateTo
+			feedFilter, dateFrom, dateTo, searchQuery = signals.FeedFilter, signals.DateFrom, signals.DateTo, signals.SearchQuery
 		}
 	}
 
-	entries := FetchEntries(h.DB, userID, feedFilter, dateFrom, dateTo, entryPageSize, offset)
+	entries := FetchEntries(h.DB, userID, feedFilter, dateFrom, dateTo, searchQuery, entryPageSize, offset)
 	hasMore := len(entries) >= entryPageSize
 
 	var buf bytes.Buffer
@@ -157,7 +160,7 @@ func (h *EntriesHandler) ToggleSelect(w http.ResponseWriter, r *http.Request) {
 		UPDATE entries SET is_selected = CASE WHEN is_selected THEN 0 ELSE 1 END
 		WHERE id = ? AND feed_id IN (SELECT id FROM feeds WHERE user_id = ?)
 	`, entryID, userID)
-	entries := FetchEntries(h.DB, userID, "", "", "", entryPageSize, 0)
+	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 	var feeds []models.Feed
 	h.DB.Select(&feeds, "SELECT * FROM feeds WHERE user_id = ? ORDER BY title COLLATE NOCASE ASC", userID)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -178,7 +181,7 @@ func (h *EntriesHandler) ClearSelection(w http.ResponseWriter, r *http.Request) 
 		UPDATE entries SET is_selected = 0
 		WHERE feed_id IN (SELECT id FROM feeds WHERE user_id = ?)
 	`, userID)
-	entries := FetchEntries(h.DB, userID, "", "", "", entryPageSize, 0)
+	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 	var feeds []models.Feed
 	h.DB.Select(&feeds, "SELECT * FROM feeds WHERE user_id = ? ORDER BY title COLLATE NOCASE ASC", userID)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -188,7 +191,7 @@ func (h *EntriesHandler) ClearSelection(w http.ResponseWriter, r *http.Request) 
 }
 
 // FetchEntries is shared between FeedsHandler and EntriesHandler
-func FetchEntries(database *db.DB, userID int64, feedFilter, dateFrom, dateTo string, limit, offset int) []entryRow {
+func FetchEntries(database *db.DB, userID int64, feedFilter, dateFrom, dateTo, searchQuery string, limit, offset int) []entryRow {
 	var entries []entryRow
 
 	query := `
@@ -209,6 +212,11 @@ func FetchEntries(database *db.DB, userID int64, feedFilter, dateFrom, dateTo st
 	if dateTo != "" {
 		query += " AND e.published_at <= ?"
 		args = append(args, dateTo+"T23:59:59")
+	}
+	if searchQuery != "" {
+		query += " AND (e.title LIKE ? OR e.summary LIKE ?)"
+		like := "%" + searchQuery + "%"
+		args = append(args, like, like)
 	}
 	query += " ORDER BY e.published_at DESC"
 	if limit > 0 {

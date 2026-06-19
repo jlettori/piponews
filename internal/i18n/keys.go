@@ -48,8 +48,9 @@ const (
 
 // Filters
 const (
-	From Key = "from"
-	To   Key = "to"
+	Search Key = "search"
+	From   Key = "from"
+	To     Key = "to"
 )
 
 // Entries

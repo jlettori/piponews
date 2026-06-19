@@ -34,7 +34,7 @@ func (h *FeedsHandler) List(w http.ResponseWriter, r *http.Request) {
 	locale := detectLocale(r)
 	userID := auth.GetUserID(r)
 	feeds := h.getFeedsWithCounts(userID)
-	entries := FetchEntries(h.DB, userID, "", "", "", entryPageSize, 0)
+	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 
 	selCount := 0
 	for _, e := range entries {
@@ -113,7 +113,7 @@ func (h *FeedsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	h.DB.Exec("UPDATE feeds SET last_fetched_at = ? WHERE id = ?", time.Now(), feedID)
 
 	feeds := h.getFeedsWithCounts(userID)
-	entries := FetchEntries(h.DB, userID, "", "", "", entryPageSize, 0)
+	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 	selCount := selectedCount(h.DB, userID)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -144,7 +144,7 @@ func (h *FeedsHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	h.refreshFeed(feedID, userID)
 
 	feeds := h.getFeedsWithCounts(userID)
-	entries := FetchEntries(h.DB, userID, "", "", "", entryPageSize, 0)
+	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	feedsTemplate.Execute(w, map[string]any{"Feeds": feeds, "TotalEntries": totalEntries(feeds), "Locale": locale})
@@ -162,7 +162,7 @@ func (h *FeedsHandler) RefreshAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feedsWithUnread := h.getFeedsWithCounts(userID)
-	entries := FetchEntries(h.DB, userID, "", "", "", entryPageSize, 0)
+	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	feedsTemplate.Execute(w, map[string]any{"Feeds": feedsWithUnread, "TotalEntries": totalEntries(feedsWithUnread), "Locale": locale})

@@ -42,8 +42,9 @@ var fr = map[Key]string{
 	InvalidFeedURL:     "URL de flux invalide : %s",
 
 	// Filters
-	From: "Du",
-	To:   "Au",
+	Search: "Rechercher...",
+	From:   "Du",
+	To:     "Au",
 
 	// Entries
 	ToggleSelect:     "Sélectionner/Désélectionner",

@@ -42,8 +42,9 @@ var it = map[Key]string{
 	InvalidFeedURL:     "URL del feed non valido: %s",
 
 	// Filters
-	From: "Da",
-	To:   "A",
+	Search: "Cerca...",
+	From:   "Da",
+	To:     "A",
 
 	// Entries
 	ToggleSelect:     "Seleziona/Deseleziona",

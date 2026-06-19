@@ -217,6 +217,7 @@ input:focus, select:focus { outline: 2px solid var(--primary); outline-offset: -
 .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; }
 .filter-select { width: auto; min-width: 180px; }
 .filter-date { width: auto; }
+.filter-search { width: auto; min-width: 250px; }
 .filter-actions { gap: 8px; }
 .filter-actions .selected-count { margin-left: auto; font-size: 0.8125rem; color: var(--text-muted); }
 

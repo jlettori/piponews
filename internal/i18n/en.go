@@ -42,8 +42,9 @@ var en = map[Key]string{
 	InvalidFeedURL:     "Invalid feed URL: %s",
 
 	// Filters
-	From: "From",
-	To:   "To",
+	Search: "Search...",
+	From:   "From",
+	To:     "To",
 
 	// Entries
 	ToggleSelect:     "Toggle select",
