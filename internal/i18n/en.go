@@ -50,6 +50,7 @@ var en = map[Key]string{
 	ToggleSelect:     "Toggle select",
 	ClearSelection:   "Clear selection",
 	SelectedCount:    "%d selected entries",
+	SelectedCountOne: "1 selected entry",
 	ExportSelected:   "Export selected",
 	NoEntriesMatch:   "No entries match the current filters.",
 	NoEntriesYet:     "No entries yet. Add a feed!",

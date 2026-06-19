@@ -50,6 +50,7 @@ var it = map[Key]string{
 	ToggleSelect:     "Seleziona/Deseleziona",
 	ClearSelection:   "Cancella selezione",
 	SelectedCount:    "%d articoli selezionati",
+	SelectedCountOne: "1 articolo selezionato",
 	ExportSelected:   "Esporta selezionati",
 	NoEntriesMatch:   "Nessun articolo corrisponde ai filtri correnti.",
 	NoEntriesYet:     "Nessun articolo. Aggiungi un feed!",

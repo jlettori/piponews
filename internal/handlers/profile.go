@@ -17,7 +17,7 @@ import (
 var validEmail = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 
 var profileDialogTemplate = template.Must(
-	template.New("profile_dialog.html").Funcs(template.FuncMap{"T": i18n.T}).ParseFS(templates.FS, "profile_dialog.html"),
+	template.New("profile_dialog.html").Funcs(templateFuncs()).ParseFS(templates.FS, "profile_dialog.html"),
 )
 
 type ProfileHandler struct {

@@ -58,6 +58,7 @@ const (
 	ToggleSelect     Key = "toggle_select"
 	ClearSelection   Key = "clear_selection"
 	SelectedCount    Key = "selected_count"
+	SelectedCountOne Key = "selected_count_one"
 	ExportSelected   Key = "export_selected"
 	NoEntriesMatch   Key = "no_entries_match"
 	NoEntriesYet     Key = "no_entries_yet"

@@ -33,19 +33,11 @@ type exportEntry struct {
 }
 
 var exportHTMLTemplate = template.Must(
-	template.New("export.html").Funcs(template.FuncMap{
-		"formatTime": formatTime,
-		"safeHTML":   safeHTML,
-		"T":          i18n.T,
-	}).ParseFS(templates.FS, "export.html"),
+	template.New("export.html").Funcs(templateFuncs()).ParseFS(templates.FS, "export.html"),
 )
 
 var exportTxtTemplate = texttemplate.Must(
-	texttemplate.New("export.txt").Funcs(texttemplate.FuncMap{
-		"formatTime": formatTime,
-		"stripTags":  stripTags,
-		"T":          i18n.T,
-	}).ParseFS(templates.FS, "export.txt"),
+	texttemplate.New("export.txt").Funcs(textTemplateFuncs()).ParseFS(templates.FS, "export.txt"),
 )
 
 func (h *ExportsHandler) Export(w http.ResponseWriter, r *http.Request) {

@@ -18,6 +18,7 @@ import (
 	"github.com/jlettori/piponews/internal/db"
 	"github.com/jlettori/piponews/internal/i18n"
 	"github.com/jlettori/piponews/internal/templates"
+	texttemplate "text/template"
 )
 
 func parseSignals(r *http.Request, target any) error {
@@ -114,18 +115,31 @@ func dict(values ...any) (map[string]any, error) {
 	return m, nil
 }
 
-func parseTemplates(files ...string) *template.Template {
-	funcMap := template.FuncMap{
+func templateFuncs() template.FuncMap {
+	return template.FuncMap{
 		"dict":       dict,
 		"formatTime": formatTime,
 		"initial":    initial,
 		"safeHTML":   safeHTML,
 		"T":          i18n.T,
+		"N":          i18n.N,
 		"version":    version,
 	}
+}
+
+func textTemplateFuncs() texttemplate.FuncMap {
+	return texttemplate.FuncMap{
+		"formatTime": formatTime,
+		"stripTags":  stripTags,
+		"T":          i18n.T,
+		"N":          i18n.N,
+	}
+}
+
+func parseTemplates(files ...string) *template.Template {
 	allFiles := []string{"base.html", "entry_card.html"}
 	allFiles = append(allFiles, files...)
-	return template.Must(template.New("base").Funcs(funcMap).ParseFS(templates.FS, allFiles...))
+	return template.Must(template.New("base").Funcs(templateFuncs()).ParseFS(templates.FS, allFiles...))
 }
 
 func joinInts(ints []int) string {

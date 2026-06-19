@@ -52,7 +52,7 @@
           <button data-on:click="@post('/entries/refresh-all')" class="btn-outline btn-sm">{{T .Locale "refresh_all"}}</button>
           <button data-on:click="@post('/entries/clear-selection')" class="btn-outline btn-sm">{{T .Locale "clear_selection"}}</button>
           <button data-on:click="$showExport = true" class="btn-primary btn-sm">{{T .Locale "export_selected"}}</button>
-          {{if .SelectedCount}}<span class="selected-count">{{T .Locale "selected_count" .SelectedCount}}</span>{{end}}
+          {{if .SelectedCount}}<span class="selected-count">{{N .Locale "selected_count" .SelectedCount}}</span>{{end}}
         </div>
       </div>
 

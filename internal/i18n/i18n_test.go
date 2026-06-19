@@ -54,6 +54,62 @@ func TestT_FrenchWithArgs(t *testing.T) {
 	}
 }
 
+func TestN_EnglishSingular(t *testing.T) {
+	got := N(En, SelectedCount, 1)
+	if got != "1 selected entry" {
+		t.Errorf("N(En, SelectedCount, 1) = %q; want %q", got, "1 selected entry")
+	}
+}
+
+func TestN_EnglishPlural(t *testing.T) {
+	got := N(En, SelectedCount, 5)
+	if got != "5 selected entries" {
+		t.Errorf("N(En, SelectedCount, 5) = %q; want %q", got, "5 selected entries")
+	}
+}
+
+func TestN_FrenchSingular(t *testing.T) {
+	got := N(Fr, SelectedCount, 1)
+	if got != "1 article sélectionné" {
+		t.Errorf("N(Fr, SelectedCount, 1) = %q; want %q", got, "1 article sélectionné")
+	}
+}
+
+func TestN_FrenchPlural(t *testing.T) {
+	got := N(Fr, SelectedCount, 3)
+	if got != "3 articles sélectionnés" {
+		t.Errorf("N(Fr, SelectedCount, 3) = %q; want %q", got, "3 articles sélectionnés")
+	}
+}
+
+func TestN_ItalianSingular(t *testing.T) {
+	got := N(It, SelectedCount, 1)
+	if got != "1 articolo selezionato" {
+		t.Errorf("N(It, SelectedCount, 1) = %q; want %q", got, "1 articolo selezionato")
+	}
+}
+
+func TestN_ItalianPlural(t *testing.T) {
+	got := N(It, SelectedCount, 7)
+	if got != "7 articoli selezionati" {
+		t.Errorf("N(It, SelectedCount, 7) = %q; want %q", got, "7 articoli selezionati")
+	}
+}
+
+func TestN_EnglishZeroCount(t *testing.T) {
+	got := N(En, SelectedCount, 0)
+	if got != "0 selected entries" {
+		t.Errorf("N(En, SelectedCount, 0) = %q; want %q", got, "0 selected entries")
+	}
+}
+
+func TestN_FallsBackForNonPluralKey(t *testing.T) {
+	got := N(En, Feeds, 5)
+	if got != "Feeds" {
+		t.Errorf("N(En, Feeds, 5) = %q; want %q", got, "Feeds")
+	}
+}
+
 func TestDetectLocale_French(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/", nil)
 	r.Header.Set("Accept-Language", "fr-FR,fr;q=0.9")
@@ -109,7 +165,7 @@ func TestAllKeysPresentInAllLocales(t *testing.T) {
 		Refresh, Remove, RefreshAll, FeedAlreadyAdded,
 		FailedToSaveFeed, URLRequired, BadRequest, FailedParseFeed, InvalidFeedURL,
 		From, To,
-		ToggleSelect, ClearSelection, SelectedCount, ExportSelected,
+		ToggleSelect, ClearSelection, SelectedCount, SelectedCountOne, ExportSelected,
 		NoEntriesMatch, NoEntriesYet, ExportSelEntries,
 		Loading, AllLoaded,
 		Format, HTML, PlainText, Cancel, Export, FailedQueryEntries,

@@ -3,6 +3,9 @@ package i18n
 import (
 	"fmt"
 	"net/http"
+
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 type Locale string
@@ -14,6 +17,41 @@ const (
 )
 
 type Key string
+
+var matcher = language.NewMatcher([]language.Tag{
+	language.English,
+	language.French,
+	language.Italian,
+})
+
+var pluralKeys = map[Key]bool{}
+
+func pluralKeysInit() {
+	pluralKeys[SelectedCount] = true
+}
+
+func localeToTag(l Locale) language.Tag {
+	switch l {
+	case Fr:
+		return language.French
+	case It:
+		return language.Italian
+	default:
+		return language.English
+	}
+}
+
+func tagToLocale(t language.Tag) Locale {
+	base, _ := t.Base()
+	switch base.String() {
+	case "fr":
+		return Fr
+	case "it":
+		return It
+	default:
+		return En
+	}
+}
 
 type Bundle struct {
 	messages map[Locale]map[Key]string
@@ -49,6 +87,33 @@ func T(locale Locale, key Key, args ...any) string {
 	return Global.T(locale, key, args...)
 }
 
+func (b *Bundle) N(locale Locale, key Key, count int, args ...any) string {
+	m, ok := b.messages[locale]
+	if !ok {
+		m = b.messages[En]
+	}
+
+	pattern, ok := m[key]
+	if !ok {
+		pattern = string(key)
+	}
+
+	if pluralKeys[key] && count == 1 {
+		oneKey := Key(string(key) + "_one")
+		if p, ok := m[oneKey]; ok {
+			pattern = p
+		}
+	}
+
+	tag := localeToTag(locale)
+	p := message.NewPrinter(tag)
+	return p.Sprintf(pattern, append([]any{count}, args...)...)
+}
+
+func N(locale Locale, key Key, count int, args ...any) string {
+	return Global.N(locale, key, count, args...)
+}
+
 const LocaleCookie = "lang"
 
 func DetectLocale(r *http.Request) Locale {
@@ -66,13 +131,13 @@ func DetectLocale(r *http.Request) Locale {
 }
 
 func (b *Bundle) DetectLocale(acceptLang string) Locale {
-	if len(acceptLang) >= 2 {
-		switch acceptLang[:2] {
-		case "fr":
-			return Fr
-		case "it":
-			return It
-		}
+	if acceptLang == "" {
+		return En
 	}
-	return En
+	tag, _ := language.MatchStrings(matcher, acceptLang)
+	return tagToLocale(tag)
+}
+
+func init() {
+	pluralKeysInit()
 }

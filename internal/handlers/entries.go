@@ -22,23 +22,11 @@ type EntriesHandler struct {
 }
 
 var entriesTemplate = template.Must(
-	template.New("entries_list.html").Funcs(template.FuncMap{
-		"dict":       dict,
-		"formatTime": formatTime,
-		"safeHTML":   safeHTML,
-		"T":          i18n.T,
-		"version":    version,
-	}).ParseFS(templates.FS, "entries_list.html", "entry_card.html"),
+	template.New("entries_list.html").Funcs(templateFuncs()).ParseFS(templates.FS, "entries_list.html", "entry_card.html"),
 )
 
 var moreEntriesTemplate = template.Must(
-	template.New("more_entries.html").Funcs(template.FuncMap{
-		"dict":       dict,
-		"formatTime": formatTime,
-		"safeHTML":   safeHTML,
-		"T":          i18n.T,
-		"version":    version,
-	}).ParseFS(templates.FS, "more_entries.html", "entry_card.html"),
+	template.New("more_entries.html").Funcs(templateFuncs()).ParseFS(templates.FS, "more_entries.html", "entry_card.html"),
 )
 
 type entryRow struct {

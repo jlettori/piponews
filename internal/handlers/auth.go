@@ -136,8 +136,7 @@ func renderAuth(w http.ResponseWriter, r *http.Request, mode string, data map[st
 	}
 	data["AuthMode"] = mode
 	data["Locale"] = detectLocale(r)
-	funcMap := template.FuncMap{"T": i18n.T, "formatTime": formatTime, "initial": initial, "safeHTML": safeHTML, "version": version}
-	t := template.Must(template.New("base").Funcs(funcMap).ParseFS(
+	t := template.Must(template.New("base").Funcs(templateFuncs()).ParseFS(
 		templates.FS,
 		"base.html", "auth.html",
 	))

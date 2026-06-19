@@ -23,11 +23,11 @@ type FeedsHandler struct {
 }
 
 var feedsTemplate = template.Must(
-	template.New("feed_list.html").Funcs(template.FuncMap{"T": i18n.T, "version": version}).ParseFS(templates.FS, "feed_list.html"),
+	template.New("feed_list.html").Funcs(templateFuncs()).ParseFS(templates.FS, "feed_list.html"),
 )
 
 var filterBarTemplate = template.Must(
-	template.New("filter_bar.html").Funcs(template.FuncMap{"T": i18n.T, "version": version}).ParseFS(templates.FS, "filter_bar.html"),
+	template.New("filter_bar.html").Funcs(templateFuncs()).ParseFS(templates.FS, "filter_bar.html"),
 )
 
 func (h *FeedsHandler) List(w http.ResponseWriter, r *http.Request) {
