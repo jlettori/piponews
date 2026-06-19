@@ -1,7 +1,11 @@
 package handlers
 
 import (
+	"html/template"
 	"testing"
+	"time"
+
+	"github.com/jlettori/piponews/internal/i18n"
 )
 
 func TestValidateFeedURL_Valid(t *testing.T) {
@@ -115,6 +119,146 @@ func TestStripTags(t *testing.T) {
 		got := stripTags(tt.input)
 		if got != tt.want {
 			t.Errorf("stripTags(%q) = %q; want %q", tt.input, got, tt.want)
+		}
+	}
+}
+
+func TestFormatTime_English(t *testing.T) {
+	val := time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC)
+	got := formatTime(&val, i18n.En)
+	want := "Jan 15, 2025"
+	if got != want {
+		t.Errorf("formatTime(en) = %q; want %q", got, want)
+	}
+}
+
+func TestFormatTime_French(t *testing.T) {
+	val := time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC)
+	got := formatTime(&val, i18n.Fr)
+	want := "15 Jan 2025"
+	if got != want {
+		t.Errorf("formatTime(fr) = %q; want %q", got, want)
+	}
+}
+
+func TestFormatTime_Italian(t *testing.T) {
+	val := time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC)
+	got := formatTime(&val, i18n.It)
+	want := "15 Jan 2025"
+	if got != want {
+		t.Errorf("formatTime(it) = %q; want %q", got, want)
+	}
+}
+
+func TestFormatTime_Nil(t *testing.T) {
+	got := formatTime(nil, i18n.En)
+	if got != "" {
+		t.Errorf("formatTime(nil) = %q; want empty string", got)
+	}
+}
+
+func TestSafeHTML(t *testing.T) {
+	input := "<p>Hello</p>"
+	got := safeHTML(input)
+	want := template.HTML("<p>Hello</p>")
+	if got != want {
+		t.Errorf("safeHTML(%q) = %q; want %q", input, got, want)
+	}
+}
+
+func TestSafeHTML_Empty(t *testing.T) {
+	got := safeHTML("")
+	if got != template.HTML("") {
+		t.Errorf("safeHTML('') = %q; want empty", got)
+	}
+}
+
+func TestVersion_Default(t *testing.T) {
+	got := version()
+	if got != "dev" {
+		t.Errorf("version() after setting = %q; want %q", got, "dev")
+	}
+}
+
+func TestInitial_Empty(t *testing.T) {
+	got := initial("")
+	if got != "?" {
+		t.Errorf("initial('') = %q; want '?'", got)
+	}
+}
+
+func TestInitial_SingleCharacter(t *testing.T) {
+	got := initial("A")
+	if got != "A" {
+		t.Errorf("initial('A') = %q; want 'A'", got)
+	}
+}
+
+func TestInitial_MultiByte(t *testing.T) {
+	got := initial("éfoo")
+	if got != "é" {
+		t.Errorf("initial('éfoo') = %q; want 'é'", got)
+	}
+}
+
+func TestInitial_FullName(t *testing.T) {
+	got := initial("John")
+	if got != "J" {
+		t.Errorf("initial('John') = %q; want 'J'", got)
+	}
+}
+
+func TestDict_EvenArgs(t *testing.T) {
+	m, err := dict("key1", "value1", "key2", 42)
+	if err != nil {
+		t.Fatalf("dict() error = %v", err)
+	}
+	if m["key1"] != "value1" {
+		t.Errorf("dict['key1'] = %q; want %q", m["key1"], "value1")
+	}
+	if m["key2"] != 42 {
+		t.Errorf("dict['key2'] = %d; want %d", m["key2"], 42)
+	}
+}
+
+func TestDict_OddArgs(t *testing.T) {
+	_, err := dict("key1", "value1", "key2")
+	if err == nil {
+		t.Error("dict() with odd args expected error")
+	}
+}
+
+func TestDict_NonStringKey(t *testing.T) {
+	_, err := dict(42, "value")
+	if err == nil {
+		t.Error("dict() with non-string key expected error")
+	}
+}
+
+func TestDict_Empty(t *testing.T) {
+	m, err := dict()
+	if err != nil {
+		t.Fatalf("dict() error = %v", err)
+	}
+	if len(m) != 0 {
+		t.Errorf("dict() = %v; want empty map", m)
+	}
+}
+
+func TestJoinInts(t *testing.T) {
+	tests := []struct {
+		input []int
+		want  string
+	}{
+		{[]int{1, 2, 3}, "1, 2, 3"},
+		{[]int{42}, "42"},
+		{[]int{}, ""},
+		{[]int{-1, 0, 1}, "-1, 0, 1"},
+	}
+	for _, tt := range tests {
+		got := joinInts(tt.input)
+		if got != tt.want {
+			t.Errorf("joinInts(%v) = %q; want %q", tt.input, got, tt.want)
 		}
 	}
 }
