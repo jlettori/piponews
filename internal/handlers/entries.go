@@ -31,10 +31,10 @@ var moreEntriesTemplate = template.Must(
 
 type entryRow struct {
 	models.Entry
-	FeedTitle string `db:"feed_title"`
+	FeedTitle  string `db:"feed_title"`
+	IsSelected bool   `db:"is_selected"`
 }
 
-// scanEntry scans an entry row from a query result
 func scanEntry(scanner interface {
 	Scan(dest ...any) error
 }, e *entryRow) error {
@@ -42,8 +42,8 @@ func scanEntry(scanner interface {
 		&e.ID, &e.FeedID, &e.GUID, &e.Title, &e.Summary,
 		&e.URL,
 		&e.PublishedAt,
-		&e.IsSelected,
 		&e.FeedTitle,
+		&e.IsSelected,
 	)
 }
 
@@ -144,10 +144,20 @@ func (h *EntriesHandler) ToggleSelect(w http.ResponseWriter, r *http.Request) {
 	locale := detectLocale(r)
 	userID := auth.GetUserID(r)
 	entryID := r.PathValue("id")
-	h.DB.Exec(`
-		UPDATE entries SET is_selected = CASE WHEN is_selected THEN 0 ELSE 1 END
-		WHERE id = ? AND feed_id IN (SELECT id FROM feeds WHERE user_id = ?)
-	`, entryID, userID)
+
+	var exists int
+	h.DB.Get(&exists, `SELECT COUNT(*) FROM entry_selections WHERE user_id = ? AND entry_id = ?`, userID, entryID)
+	if exists > 0 {
+		h.DB.Exec(`DELETE FROM entry_selections WHERE user_id = ? AND entry_id = ?`, userID, entryID)
+	} else {
+		h.DB.Exec(`
+			INSERT INTO entry_selections (user_id, entry_id)
+			SELECT ?, ? WHERE EXISTS (
+				SELECT 1 FROM entries e JOIN feeds f ON f.id = e.feed_id
+				WHERE e.id = ? AND f.user_id = ?
+			)
+		`, userID, entryID, entryID, userID)
+	}
 	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 	var feeds []models.Feed
 	h.DB.Select(&feeds, "SELECT * FROM feeds WHERE user_id = ? ORDER BY title COLLATE NOCASE ASC", userID)
@@ -166,9 +176,11 @@ func (h *EntriesHandler) ClearSelection(w http.ResponseWriter, r *http.Request) 
 	locale := detectLocale(r)
 	userID := auth.GetUserID(r)
 	h.DB.Exec(`
-		UPDATE entries SET is_selected = 0
-		WHERE feed_id IN (SELECT id FROM feeds WHERE user_id = ?)
-	`, userID)
+		DELETE FROM entry_selections
+		WHERE user_id = ? AND entry_id IN (
+			SELECT e.id FROM entries e JOIN feeds f ON f.id = e.feed_id WHERE f.user_id = ?
+		)
+	`, userID, userID)
 	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 	var feeds []models.Feed
 	h.DB.Select(&feeds, "SELECT * FROM feeds WHERE user_id = ? ORDER BY title COLLATE NOCASE ASC", userID)
@@ -183,11 +195,14 @@ func FetchEntries(database *db.DB, userID int64, feedFilter, dateFrom, dateTo, s
 	var entries []entryRow
 
 	query := `
-		SELECT e.*, f.title as feed_title
+		SELECT e.id, e.feed_id, e.guid, e.title, e.summary, e.url, e.published_at,
+		       f.title AS feed_title,
+		       CASE WHEN us.entry_id IS NOT NULL THEN 1 ELSE 0 END AS is_selected
 		FROM entries e
 		JOIN feeds f ON f.id = e.feed_id
+		LEFT JOIN entry_selections us ON us.entry_id = e.id AND us.user_id = ?
 		WHERE f.user_id = ?`
-	args := []any{userID}
+	args := []any{userID, userID}
 
 	if feedFilter != "" {
 		query += " AND e.feed_id = ?"

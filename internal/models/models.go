@@ -32,5 +32,4 @@ type Entry struct {
 	URL         string     `db:"url" json:"url"`
 	Summary     string     `db:"summary" json:"summary"`
 	PublishedAt *time.Time `db:"published_at" json:"published_at"`
-	IsSelected  bool       `db:"is_selected" json:"is_selected"`
 }

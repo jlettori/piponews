@@ -1,6 +1,5 @@
 # piponews
 
-[![Go](https://img.shields.io/badge/Go-1.26-00ADD8?logo=go)](https://go.dev)
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/jlettori/piponews)
 [![Coverage](https://img.shields.io/badge/coverage-76%25-25A162)](https://github.com/jlettori/piponews)
 [![Go Reference](https://img.shields.io/badge/docs-pkg.go.dev-007D9C)](https://pkg.go.dev/github.com/jlettori/piponews)

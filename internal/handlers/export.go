@@ -59,12 +59,13 @@ func (h *ExportsHandler) Export(w http.ResponseWriter, r *http.Request) {
 	format = strings.TrimSpace(format)
 
 	rows, err := h.DB.Query(`
-		SELECT e.id, e.feed_id, e.guid, e.title, e.url, e.summary, e.published_at, e.is_selected, f.title as feed_title
+		SELECT e.id, e.feed_id, e.guid, e.title, e.url, e.summary, e.published_at, 1 AS is_selected, f.title AS feed_title
 		FROM entries e
 		JOIN feeds f ON f.id = e.feed_id
-		WHERE e.is_selected = 1 AND f.user_id = ?
+		JOIN entry_selections us ON us.entry_id = e.id
+		WHERE us.user_id = ? AND f.user_id = ?
 		ORDER BY e.published_at DESC
-	`, userID)
+	`, userID, userID)
 	if err != nil {
 		ErrResponse(w, i18n.T(locale, i18n.FailedQueryEntries), http.StatusInternalServerError)
 		return

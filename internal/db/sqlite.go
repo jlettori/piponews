@@ -60,8 +60,13 @@ func migrate(db *sqlx.DB) error {
 		summary TEXT NOT NULL DEFAULT '',
 		url TEXT NOT NULL DEFAULT '',
 		published_at DATETIME,
-		is_selected INTEGER DEFAULT 0,
 		UNIQUE(feed_id, guid)
+	);
+
+	CREATE TABLE IF NOT EXISTS entry_selections (
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		entry_id INTEGER NOT NULL REFERENCES entries(id) ON DELETE CASCADE,
+		PRIMARY KEY (user_id, entry_id)
 	);
 
 	CREATE INDEX IF NOT EXISTS idx_entries_feed_id ON entries(feed_id);

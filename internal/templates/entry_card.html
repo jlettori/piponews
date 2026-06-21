@@ -1,8 +1,8 @@
 {{define "entry_card"}}
-<div class="entry-card{{if .Entry.IsSelected}} selected{{end}}">
+<div class="entry-card{{if .IsSelected}} selected{{end}}">
    <div class="entry-title-row">
      <button data-on:click="@post('/entries/{{.Entry.ID}}/toggle-select')" class="btn-icon" title="{{T .Locale "toggle_select"}}">
-       {{if .Entry.IsSelected}}<span>☑</span>{{else}}<span>☐</span>{{end}}
+       {{if .IsSelected}}<span>☑</span>{{else}}<span>☐</span>{{end}}
      </button>
      <h3 class="entry-title">
        <a href="{{.Entry.URL}}" target="_blank" rel="noopener">{{.Entry.Title}}</a>
