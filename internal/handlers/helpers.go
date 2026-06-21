@@ -163,6 +163,12 @@ func detectLocale(r *http.Request) i18n.Locale {
 
 func selectedCount(database *db.DB, userID int64) int {
 	var count int
-	database.Get(&count, "SELECT COUNT(*) FROM entry_selections us JOIN entries e ON e.id = us.entry_id JOIN feeds f ON f.id = e.feed_id WHERE f.user_id = ? AND us.user_id = ?", userID, userID)
+	database.Get(&count, `
+		SELECT COUNT(*)
+		FROM entry_selections us
+		JOIN entries e ON e.id = us.entry_id
+		JOIN feeds f ON f.id = e.feed_id
+		WHERE f.user_id = ? AND us.user_id = ?
+	`, userID, userID)
 	return count
 }

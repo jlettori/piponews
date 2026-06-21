@@ -29,7 +29,11 @@ func (h *ProfileHandler) GET(w http.ResponseWriter, r *http.Request) {
 	userID := auth.GetUserID(r)
 
 	var user models.User
-	h.DB.Get(&user, "SELECT * FROM users WHERE id = ?", userID)
+	h.DB.Get(&user, `
+		SELECT id, username, password_hash, first_name, last_name, email, preferred_language, created_at
+		FROM users
+		WHERE id = ?
+	`, userID)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	profileDialogTemplate.Execute(w, map[string]any{

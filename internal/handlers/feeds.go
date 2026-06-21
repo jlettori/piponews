@@ -171,7 +171,13 @@ func (h *FeedsHandler) RefreshAll(w http.ResponseWriter, r *http.Request) {
 
 func (h *FeedsHandler) getFeedsWithCounts(userID int64) []models.Feed {
 	var feeds []models.Feed
-	h.DB.Select(&feeds, "SELECT *, (SELECT COUNT(*) FROM entries WHERE feed_id = feeds.id) AS entry_count FROM feeds WHERE user_id = ? ORDER BY title COLLATE NOCASE ASC", userID)
+	h.DB.Select(&feeds, `
+		SELECT id, user_id, title, url, last_fetched_at, created_at,
+		       (SELECT COUNT(*) FROM entries WHERE feed_id = feeds.id) AS entry_count
+		FROM feeds
+		WHERE user_id = ?
+		ORDER BY title COLLATE NOCASE ASC
+	`, userID)
 	return feeds
 }
 
@@ -183,7 +189,7 @@ func (h *FeedsHandler) refreshFeed(feedID, userID int64) {
 	}()
 
 	var feed models.Feed
-	err := h.DB.Get(&feed, "SELECT * FROM feeds WHERE id = ? AND user_id = ?", feedID, userID)
+	err := h.DB.Get(&feed, "SELECT id, user_id, title, url, last_fetched_at, created_at FROM feeds WHERE id = ? AND user_id = ?", feedID, userID)
 	if err != nil {
 		return
 	}

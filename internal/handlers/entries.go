@@ -160,7 +160,12 @@ func (h *EntriesHandler) ToggleSelect(w http.ResponseWriter, r *http.Request) {
 	}
 	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 	var feeds []models.Feed
-	h.DB.Select(&feeds, "SELECT * FROM feeds WHERE user_id = ? ORDER BY title COLLATE NOCASE ASC", userID)
+	h.DB.Select(&feeds, `
+		SELECT id, user_id, title, url, last_fetched_at, created_at
+		FROM feeds
+		WHERE user_id = ?
+		ORDER BY title COLLATE NOCASE ASC
+	`, userID)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	selCount := 0
 	for _, e := range entries {
@@ -183,7 +188,12 @@ func (h *EntriesHandler) ClearSelection(w http.ResponseWriter, r *http.Request) 
 	`, userID, userID)
 	entries := FetchEntries(h.DB, userID, "", "", "", "", entryPageSize, 0)
 	var feeds []models.Feed
-	h.DB.Select(&feeds, "SELECT * FROM feeds WHERE user_id = ? ORDER BY title COLLATE NOCASE ASC", userID)
+	h.DB.Select(&feeds, `
+		SELECT id, user_id, title, url, last_fetched_at, created_at
+		FROM feeds
+		WHERE user_id = ?
+		ORDER BY title COLLATE NOCASE ASC
+	`, userID)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	selCount := 0
 	filterBarTemplate.Execute(w, map[string]any{"Feeds": feeds, "Locale": locale, "SelectedCount": selCount})
