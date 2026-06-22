@@ -67,4 +67,4 @@ make migrate/down
 
 ## Tests
 
-Standard Go test framework: `go test ./...`
+Standard Go test framework: `make test`
