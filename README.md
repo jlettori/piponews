@@ -1,7 +1,7 @@
 # piponews
 
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/jlettori/piponews)
-[![Coverage](https://img.shields.io/badge/coverage-76%25-25A162)](https://github.com/jlettori/piponews)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/jlettori/YOUR_GIST_ID/raw/coverage.json)](https://github.com/jlettori/piponews/actions?query=workflow%3ACI)
 [![Go Reference](https://img.shields.io/badge/docs-pkg.go.dev-007D9C)](https://pkg.go.dev/github.com/jlettori/piponews)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 

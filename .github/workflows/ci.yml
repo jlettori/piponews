@@ -4,15 +4,51 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+
       - uses: actions/setup-go@v6
         with:
-          go-version: '1.26'
+          go-version: "1.26"
           check-latest: true
-      - run: go vet ./...
-      - run: go test -count=1 ./...
+
+      - name: Build
+        run: go build -o /dev/null .
+
+      - name: Test with coverage
+        run: go test -coverprofile=coverage.out -count=1 ./...
+
+      - name: Extract coverage percentage
+        id: extract
+        run: |
+          echo "total=$(go tool cover -func=coverage.out | grep total | awk '{print $3}')" >> $GITHUB_OUTPUT
+
+      - name: Determine badge color
+        id: color
+        run: |
+          pct=${{ steps.extract.outputs.total }}
+          pct_num=${pct%\%}
+          if (( $(echo "$pct_num >= 80" | bc -l) )); then
+            echo "color=25A162" >> $GITHUB_OUTPUT
+          elif (( $(echo "$pct_num >= 60" | bc -l) )); then
+            echo "color=DAA520" >> $GITHUB_OUTPUT
+          else
+            echo "color=DC3545" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update coverage badge
+        if: github.ref == 'refs/heads/main'
+        uses: schneegans/dynamic-badges-action@v1.8.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ vars.COVERAGE_GIST_ID }}
+          filename: coverage.json
+          label: coverage
+          message: ${{ steps.extract.outputs.total }}
+          color: ${{ steps.color.outputs.color }}
