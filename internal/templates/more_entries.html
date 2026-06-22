@@ -1,3 +1,8 @@
 {{range .Entries}}
 {{template "entry_card" (dict "Entry" . "Locale" $.Locale "IsSelected" .IsSelected)}}
 {{end}}
+{{if .HasMore}}
+<div id="entries-sentinel" data-on-intersect="@get('/entries/more?v={{version}}')" class="entries-sentinel">
+  <span>{{T .Locale "loading"}}</span>
+</div>
+{{end}}

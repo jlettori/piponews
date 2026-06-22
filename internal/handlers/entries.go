@@ -104,11 +104,16 @@ func (h *EntriesHandler) More(w http.ResponseWriter, r *http.Request) {
 	moreEntriesTemplate.Execute(&buf, map[string]any{
 		"Entries": entries,
 		"Locale":  locale,
+		"HasMore": hasMore,
 	})
 
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 
+	writeSSEEvent(w, "datastar-patch-elements", map[string]string{
+		"selector": "#entries-sentinel",
+		"mode":     "remove",
+	})
 	writeSSEEvent(w, "datastar-patch-elements", map[string]string{
 		"selector": "#entries-list",
 		"mode":     "append",
@@ -118,11 +123,6 @@ func (h *EntriesHandler) More(w http.ResponseWriter, r *http.Request) {
 	if hasMore {
 		writeSSEEvent(w, "datastar-patch-signals", map[string]string{
 			"signals": fmt.Sprintf(`{"offset":%d}`, offset+entryPageSize),
-		})
-	} else {
-		writeSSEEvent(w, "datastar-patch-elements", map[string]string{
-			"selector": "#entries-sentinel",
-			"mode":     "remove",
 		})
 	}
 }
