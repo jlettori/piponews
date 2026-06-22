@@ -18,7 +18,8 @@
 main.go              — entry point, flag parsing, server start
 routes.go            — HTTP route definitions
 internal/
-  db/sqlite.go       — DB init, schema migration
+  db/sqlite.go       — DB init, goose-based schema migration
+  db/migrations/     — SQL migration files (goose)
   models/models.go   — User, Feed, Entry structs
   handlers/
     entries.go       — entry listing/filtering/selection
@@ -47,6 +48,22 @@ make run     — go run .
 ```
 
 Server listens on `127.0.0.1:8080` by default (override with `-addr`).
+
+## Migrations
+
+SQL migrations are managed by [pressly/goose](https://github.com/pressly/goose) and live in `internal/db/migrations/`. Migrations run automatically on startup via `goose.Up`.
+
+Create a new migration:
+```
+make migrate/new <name>
+```
+
+Other goose commands:
+```
+make migrate/status
+make migrate/up
+make migrate/down
+```
 
 ## Tests
 

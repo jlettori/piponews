@@ -15,3 +15,15 @@ coverage:
 
 clean:
 	rm -f piponews piponews.db coverage.out coverage.html
+
+migrate/new:
+	go run github.com/pressly/goose/v3/cmd/goose -dir internal/db/migrations create $(filter-out $@,$(MAKECMDGOALS)) sql
+
+migrate/status:
+	go run github.com/pressly/goose/v3/cmd/goose -dir internal/db/migrations sqlite3 piponews.db status
+
+migrate/up:
+	go run github.com/pressly/goose/v3/cmd/goose -dir internal/db/migrations sqlite3 piponews.db up
+
+migrate/down:
+	go run github.com/pressly/goose/v3/cmd/goose -dir internal/db/migrations sqlite3 piponews.db down

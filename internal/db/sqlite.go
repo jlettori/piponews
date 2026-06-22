@@ -2,12 +2,17 @@ package db
 
 import (
 	"database/sql"
+	"embed"
 	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/pressly/goose/v3"
 	_ "modernc.org/sqlite"
 )
+
+//go:embed migrations/*.sql
+var migrationsFS embed.FS
 
 type DB struct {
 	*sqlx.DB
@@ -30,54 +35,11 @@ func InitDB(path string) (*DB, error) {
 }
 
 func migrate(db *sqlx.DB) error {
-	schema := `
-	CREATE TABLE IF NOT EXISTS users (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		username TEXT UNIQUE NOT NULL,
-		password_hash TEXT NOT NULL,
-		first_name TEXT NOT NULL DEFAULT '',
-		last_name TEXT NOT NULL DEFAULT '',
-		email TEXT NOT NULL DEFAULT '',
-		preferred_language TEXT NOT NULL DEFAULT '',
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	);
-
-	CREATE TABLE IF NOT EXISTS feeds (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-		title TEXT NOT NULL DEFAULT '',
-		url TEXT NOT NULL,
-		last_fetched_at DATETIME,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		UNIQUE(user_id, url)
-	);
-
-	CREATE TABLE IF NOT EXISTS entries (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		feed_id INTEGER NOT NULL REFERENCES feeds(id) ON DELETE CASCADE,
-		guid TEXT NOT NULL,
-		title TEXT NOT NULL DEFAULT '',
-		summary TEXT NOT NULL DEFAULT '',
-		url TEXT NOT NULL DEFAULT '',
-		published_at DATETIME,
-		UNIQUE(feed_id, guid)
-	);
-
-	CREATE TABLE IF NOT EXISTS entry_selections (
-		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-		entry_id INTEGER NOT NULL REFERENCES entries(id) ON DELETE CASCADE,
-		PRIMARY KEY (user_id, entry_id)
-	);
-
-	CREATE INDEX IF NOT EXISTS idx_entries_feed_id ON entries(feed_id);
-	CREATE INDEX IF NOT EXISTS idx_entries_published_at ON entries(published_at DESC);
-	CREATE INDEX IF NOT EXISTS idx_entries_feed_pub ON entries(feed_id, published_at DESC);
-	`
-
-	if _, err := db.Exec(schema); err != nil {
+	goose.SetBaseFS(migrationsFS)
+	goose.SetDialect("sqlite3")
+	if err := goose.Up(db.DB, "migrations"); err != nil {
 		return err
 	}
-
 	return nil
 }
 
