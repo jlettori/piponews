@@ -8,7 +8,7 @@
 - **Web framework:** stdlib `net/http` with Go 1.22+ enhanced ServeMux (method-based routing)
 - **Templating:** Go `html/template`, embedded via `embed.FS`
 - **Frontend:** [DataStar](https://data-star.dev/) — reactive hypermedia (client-side signals, SSE-based DOM patching)
-- **Auth:** session-based (signed cookies, `golang.org/x/crypto`)
+- **Auth:** session-based (random tokens stored in `user_sessions` table, `golang.org/x/crypto` for bcrypt)
 - **RSS parsing:** `mmcdole/gofeed`
 - **i18n:** custom internal package (en/fr/it)
 
@@ -28,7 +28,7 @@ internal/
     helpers.go       — shared utilities, sanitization, version
   templates/         — *.html templates
   i18n/              — keys.go + en/fr/it translations
-  auth/auth.go       — session tokens, password hashing
+  auth/auth.go       — session store (DB-backed), password hashing
 static/              — CSS, client-side JS (datastar.js)
 ```
 
@@ -39,6 +39,7 @@ static/              — CSS, client-side JS (datastar.js)
 - **Handlers** parse signals via `json.Unmarshal` from `r.URL.Query().Get("datastar")`.
 - **Templates** use the `T` func for i18n and `dict` for passing multiple values.
 - **Build version** is injected at build time via `-ldflags` into `handlers.BuildVersion`.
+- **All session data is stored in the database** (`user_sessions` table). Sessions survive server restarts and can be revoked server-side.
 
 ## Commands
 
