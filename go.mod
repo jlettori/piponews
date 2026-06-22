@@ -7,7 +7,7 @@ require (
 	github.com/mmcdole/gofeed v1.3.0
 	golang.org/x/crypto v0.53.0
 	golang.org/x/text v0.38.0
-	modernc.org/sqlite v1.52.0
+	modernc.org/sqlite v1.53.0
 )
 
 require (
