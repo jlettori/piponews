@@ -1,4 +1,4 @@
-<div id="feed-list" class="feed-list">
+<div id="feed-list" class="feed-list" data-signals="{url: ''}">
 {{if .Feeds}}
 <div class="feed-item feed-all" data-class:active="$feedFilter == ''">
   <a href="#" data-on:click="$feedFilter = ''; @get('/entries?v={{version}}')" class="feed-link">
