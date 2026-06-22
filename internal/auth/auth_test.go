@@ -3,10 +3,20 @@ package auth
 import (
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
+
+	"github.com/jlettori/piponews/internal/db"
 )
+
+func storeForTest(t *testing.T) *Store {
+	t.Helper()
+	database, err := db.InitDB(":memory:")
+	if err != nil {
+		t.Fatalf("InitDB() error = %v", err)
+	}
+	return NewStore(database)
+}
 
 func TestHashAndCheckPassword(t *testing.T) {
 	password := "mySecretPassword123!"
@@ -26,10 +36,11 @@ func TestHashAndCheckPassword(t *testing.T) {
 }
 
 func TestCreateAndVerifySession(t *testing.T) {
+	s := storeForTest(t)
 	w := httptest.NewRecorder()
-	err := CreateSessionCookie(w, 42, "testuser")
+	err := s.CreateSession(w, 42, "testuser", DefaultSessionDuration)
 	if err != nil {
-		t.Fatalf("CreateSessionCookie() error = %v", err)
+		t.Fatalf("CreateSession() error = %v", err)
 	}
 
 	resp := w.Result()
@@ -51,58 +62,42 @@ func TestCreateAndVerifySession(t *testing.T) {
 
 	r := httptest.NewRequest("GET", "/", nil)
 	r.AddCookie(cookie)
-	claims, err := GetSession(r)
+	sess, err := s.GetSession(r)
 	if err != nil {
 		t.Fatalf("GetSession() error = %v", err)
 	}
-	if claims.UserID != 42 {
-		t.Errorf("claims.UserID = %d; want 42", claims.UserID)
+	if sess.UserID != 42 {
+		t.Errorf("sess.UserID = %d; want 42", sess.UserID)
 	}
-	if claims.Username != "testuser" {
-		t.Errorf("claims.Username = %q; want %q", claims.Username, "testuser")
+	if sess.Username != "testuser" {
+		t.Errorf("sess.Username = %q; want %q", sess.Username, "testuser")
 	}
 }
 
 func TestGetSession_NoCookie(t *testing.T) {
+	s := storeForTest(t)
 	r := httptest.NewRequest("GET", "/", nil)
-	_, err := GetSession(r)
+	_, err := s.GetSession(r)
 	if err == nil {
 		t.Fatal("GetSession() expected error for missing cookie")
 	}
 }
 
 func TestGetSession_InvalidToken(t *testing.T) {
+	s := storeForTest(t)
 	r := httptest.NewRequest("GET", "/", nil)
 	r.AddCookie(&http.Cookie{Name: "session", Value: "invalid-token"})
-	_, err := GetSession(r)
+	_, err := s.GetSession(r)
 	if err == nil {
 		t.Fatal("GetSession() expected error for invalid token")
 	}
 }
 
-func TestGetSession_TamperedPayload(t *testing.T) {
+func TestClearSession(t *testing.T) {
+	s := storeForTest(t)
 	w := httptest.NewRecorder()
-	CreateSessionCookie(w, 1, "user")
-	resp := w.Result()
-	cookie := resp.Cookies()[0]
-
-	parts := strings.Split(cookie.Value, ".")
-	if len(parts) != 2 {
-		t.Fatal("unexpected token format")
-	}
-	tampered := parts[0] + ".invalidsignature"
-
 	r := httptest.NewRequest("GET", "/", nil)
-	r.AddCookie(&http.Cookie{Name: "session", Value: tampered})
-	_, err := GetSession(r)
-	if err == nil {
-		t.Fatal("GetSession() expected error for tampered token")
-	}
-}
-
-func TestClearSessionCookie(t *testing.T) {
-	w := httptest.NewRecorder()
-	ClearSessionCookie(w)
+	s.ClearSession(w, r)
 	resp := w.Result()
 	cookies := resp.Cookies()
 	if len(cookies) != 1 {
@@ -118,8 +113,12 @@ func TestClearSessionCookie(t *testing.T) {
 }
 
 func TestRequireAuth_ValidSession(t *testing.T) {
+	s := storeForTest(t)
 	w := httptest.NewRecorder()
-	CreateSessionCookie(w, 7, "alice")
+	err := s.CreateSession(w, 7, "alice", DefaultSessionDuration)
+	if err != nil {
+		t.Fatalf("CreateSession() error = %v", err)
+	}
 	resp := w.Result()
 	cookie := resp.Cookies()[0]
 
@@ -127,7 +126,7 @@ func TestRequireAuth_ValidSession(t *testing.T) {
 	r.AddCookie(cookie)
 
 	var handled bool
-	handler := RequireAuth(func(w http.ResponseWriter, r *http.Request) {
+	handler := s.RequireAuth(func(w http.ResponseWriter, r *http.Request) {
 		handled = true
 		if id := GetUserID(r); id != 7 {
 			t.Errorf("GetUserID() = %d; want 7", id)
@@ -144,11 +143,12 @@ func TestRequireAuth_ValidSession(t *testing.T) {
 }
 
 func TestRequireAuth_NoSession(t *testing.T) {
+	s := storeForTest(t)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/feeds", nil)
 
 	var handled bool
-	handler := RequireAuth(func(w http.ResponseWriter, r *http.Request) {
+	handler := s.RequireAuth(func(w http.ResponseWriter, r *http.Request) {
 		handled = true
 	})
 
