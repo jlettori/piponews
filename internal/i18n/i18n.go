@@ -107,7 +107,10 @@ func (b *Bundle) N(locale Locale, key Key, count int, args ...any) string {
 
 	tag := localeToTag(locale)
 	p := message.NewPrinter(tag)
-	return p.Sprintf(pattern, append([]any{count}, args...)...)
+	if pluralKeys[key] {
+		return p.Sprintf(pattern, append([]any{count}, args...)...)
+	}
+	return p.Sprintf(pattern, args...)
 }
 
 func N(locale Locale, key Key, count int, args ...any) string {
