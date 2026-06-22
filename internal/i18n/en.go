@@ -16,6 +16,7 @@ var en = map[Key]string{
 	UsernameChars:            "Username may only contain letters, digits, underscores, and hyphens",
 	PasswordLength:           "Password must be at least 4 characters",
 	UsernameTaken:            "Username already taken",
+	RememberMe:               "Keep me signed in",
 
 	// Layout
 	AppName:     "piponews",

@@ -15,7 +15,8 @@ import (
 var validUsername = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 
 type AuthHandler struct {
-	DB *db.DB
+	DB       *db.DB
+	Sessions *auth.Store
 }
 
 func (h *AuthHandler) AuthPage(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +24,7 @@ func (h *AuthHandler) AuthPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) LoginGET(w http.ResponseWriter, r *http.Request) {
-	if _, err := auth.GetSession(r); err == nil {
+	if _, err := h.Sessions.GetSession(r); err == nil {
 		http.Redirect(w, r, "/feeds", http.StatusSeeOther)
 		return
 	}
@@ -60,7 +61,11 @@ func (h *AuthHandler) LoginPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := auth.CreateSessionCookie(w, user.ID, user.Username); err != nil {
+	duration := auth.DefaultSessionDuration
+	if r.FormValue("remember") == "on" {
+		duration = auth.RememberedSessionDuration
+	}
+	if err := h.Sessions.CreateSession(w, user.ID, user.Username, duration); err != nil {
 		renderAuth(w, r, "login", map[string]any{"Error": i18n.T(locale, i18n.InternalError)})
 		return
 	}
@@ -68,7 +73,7 @@ func (h *AuthHandler) LoginPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) RegisterGET(w http.ResponseWriter, r *http.Request) {
-	if _, err := auth.GetSession(r); err == nil {
+	if _, err := h.Sessions.GetSession(r); err == nil {
 		http.Redirect(w, r, "/feeds", http.StatusSeeOther)
 		return
 	}
@@ -118,7 +123,7 @@ func (h *AuthHandler) RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id, _ := res.LastInsertId()
-	if err := auth.CreateSessionCookie(w, id, username); err != nil {
+	if err := h.Sessions.CreateSession(w, id, username, auth.DefaultSessionDuration); err != nil {
 		renderAuth(w, r, "register", map[string]any{"Error": i18n.T(locale, i18n.InternalError)})
 		return
 	}
@@ -126,8 +131,17 @@ func (h *AuthHandler) RegisterPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) LogoutPOST(w http.ResponseWriter, r *http.Request) {
-	auth.ClearSessionCookie(w)
+	h.Sessions.ClearSession(w, r)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *AuthHandler) CheckSession(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if _, err := h.Sessions.GetSession(r); err == nil {
+		w.Write([]byte(`{"authenticated":true}`))
+	} else {
+		w.Write([]byte(`{"authenticated":false}`))
+	}
 }
 
 func renderAuth(w http.ResponseWriter, r *http.Request, mode string, data map[string]any) {

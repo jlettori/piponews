@@ -21,7 +21,8 @@ var profileDialogTemplate = template.Must(
 )
 
 type ProfileHandler struct {
-	DB *db.DB
+	DB       *db.DB
+	Sessions *auth.Store
 }
 
 func (h *ProfileHandler) GET(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +100,10 @@ func (h *ProfileHandler) POST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	auth.CreateSessionCookie(w, userID, username)
+	if err := h.Sessions.CreateSession(w, userID, username, auth.DefaultSessionDuration); err != nil {
+		w.Write(errorAlert(i18n.T(locale, i18n.InternalError)))
+		return
+	}
 	http.Redirect(w, r, "/feeds", http.StatusSeeOther)
 }
 

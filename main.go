@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jlettori/piponews/internal/auth"
 	"github.com/jlettori/piponews/internal/db"
 	"github.com/jlettori/piponews/internal/handlers"
 	"github.com/jlettori/piponews/internal/i18n"
@@ -46,7 +47,8 @@ func main() {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
-	mux := newRouter(database)
+	sessions := auth.NewStore(database)
+	mux := newRouter(database, sessions)
 
 	log.Printf("Init\n%s %s (build %s)\ndatabase: %s\nlistening on %s",
 		appName, Version, handlers.BuildVersion, dbPath, *addr)

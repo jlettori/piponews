@@ -16,6 +16,7 @@ const (
 	UsernameChars            Key = "username_chars"
 	PasswordLength           Key = "password_length"
 	UsernameTaken            Key = "username_taken"
+	RememberMe               Key = "remember_me"
 )
 
 // Layout

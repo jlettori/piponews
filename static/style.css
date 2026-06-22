@@ -71,6 +71,8 @@ nav {
 /* forms */
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 4px; }
+.form-checkbox label { display: flex; align-items: center; gap: 8px; font-weight: 400; cursor: pointer; }
+.form-checkbox input[type="checkbox"] { width: auto; accent-color: var(--primary); }
 input[type="text"], input[type="password"], input[type="url"], input[type="date"], input[type="email"], select {
   width: 100%;
   padding: 8px 12px;
