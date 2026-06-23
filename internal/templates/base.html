@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{T .Locale "app_name"}}</title>
   <script src="/static/datastar.js?v={{version}}" type="module"></script>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{version}}">
   <link rel="stylesheet" href="/static/style.css?v={{version}}">
 </head>
 <body data-signals="{showUserMenu: false}">
   <nav>
     <div class="nav-inner">
-      <a href="/feeds" class="logo">{{T .Locale "app_name"}}</a>
+      <a href="/feeds" class="logo">🪈 {{T .Locale "app_name"}}</a>
       {{if .Username}}
       <div class="nav-right">
         <div class="user-avatar-wrap">
