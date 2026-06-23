@@ -23,9 +23,9 @@ var fr = map[Key]string{
 	Logout:      "Déconnexion",
 	EditProfile: "Modifier le profil",
 	Language:    "Langue",
-	LangEN:      "English",
+	LangEN:      "Anglais",
 	LangFR:      "Français",
-	LangIT:      "Italiano",
+	LangIT:      "Italien",
 
 	// Feeds
 	Feeds:              "Flux",

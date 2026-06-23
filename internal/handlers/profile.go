@@ -121,5 +121,9 @@ func (h *ProfileHandler) POST(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	http.Redirect(w, r, "/feeds", http.StatusSeeOther)
+	if r.URL.Query().Get("done") == "1" {
+		http.Redirect(w, r, "/feeds", http.StatusSeeOther)
+	} else {
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+	}
 }

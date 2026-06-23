@@ -22,14 +22,14 @@
       </div>
       <div class="form-group">
         <label for="preferred_language">{{T .Locale "language"}}</label>
-        <select id="preferred_language" name="preferred_language">
-          <option value="en" {{if eq .PreferredLanguage "en"}}selected{{end}}>{{T .Locale "lang_en"}}</option>
-          <option value="fr" {{if eq .PreferredLanguage "fr"}}selected{{end}}>{{T .Locale "lang_fr"}}</option>
-          <option value="it" {{if eq .PreferredLanguage "it"}}selected{{end}}>{{T .Locale "lang_it"}}</option>
+        <select id="preferred_language" name="preferred_language" onchange="this.form.submit()">
+          <option value="en" {{if eq .PreferredLanguage "en"}}selected{{end}}>🇬🇧 {{T .Locale "lang_en"}}</option>
+          <option value="fr" {{if eq .PreferredLanguage "fr"}}selected{{end}}>🇫🇷 {{T .Locale "lang_fr"}}</option>
+          <option value="it" {{if eq .PreferredLanguage "it"}}selected{{end}}>🇮🇹 {{T .Locale "lang_it"}}</option>
         </select>
       </div>
       <div style="display:flex;gap:8px;margin-top:24px">
-        <button type="submit" class="btn-primary btn-full">{{T .Locale "save"}}</button>
+        <button type="submit" formaction="/profile?done=1" class="btn-primary btn-full">{{T .Locale "save"}}</button>
         <a href="/feeds" class="btn-outline btn-full" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none">{{T .Locale "cancel"}}</a>
       </div>
     </form>

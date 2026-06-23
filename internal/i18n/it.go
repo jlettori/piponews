@@ -23,8 +23,8 @@ var it = map[Key]string{
 	Logout:      "Esci",
 	EditProfile: "Modifica profilo",
 	Language:    "Lingua",
-	LangEN:      "English",
-	LangFR:      "Français",
+	LangEN:      "Inglese",
+	LangFR:      "Francese",
 	LangIT:      "Italiano",
 
 	// Feeds
