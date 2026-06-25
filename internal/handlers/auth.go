@@ -112,7 +112,8 @@ func (h *AuthHandler) RegisterPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.DB.Exec("INSERT INTO users (username, password_hash) VALUES (?, ?)", username, hash)
+	preferredLanguage := string(locale)
+	res, err := h.DB.Exec("INSERT INTO users (username, password_hash, preferred_language) VALUES (?, ?, ?)", username, hash, preferredLanguage)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") {
 			renderAuth(w, r, "register", map[string]any{"Error": i18n.T(locale, i18n.UsernameTaken)})
